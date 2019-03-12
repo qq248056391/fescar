@@ -19,17 +19,16 @@ package com.alibaba.fescar.spring.annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 import com.alibaba.fescar.common.exception.NotSupportYetException;
+import com.alibaba.fescar.common.util.StringUtils;
 import com.alibaba.fescar.config.ConfigurationFactory;
 import com.alibaba.fescar.rm.RMClientAT;
 import com.alibaba.fescar.tm.TMClient;
 import com.alibaba.fescar.tm.api.DefaultFailureHandlerImpl;
 import com.alibaba.fescar.tm.api.FailureHandler;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.Advisor;
@@ -49,7 +48,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class GlobalTransactionScanner extends AbstractAutoProxyCreator implements InitializingBean {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -147,7 +146,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator implement
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Initializing Global Transaction Clients ... ");
         }
-        if (StringUtils.isEmpty(applicationId) || StringUtils.isEmpty(txServiceGroup)) {
+        if (StringUtils.isNullOrEmpty(applicationId) || StringUtils.isNullOrEmpty(txServiceGroup)) {
             throw new IllegalArgumentException(
                 "applicationId: " + applicationId + ", txServiceGroup: " + txServiceGroup);
         }
@@ -193,18 +192,18 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator implement
                         shouldSkip = false;
                         break;
                     }
-                    
+
                     GlobalLock lockAnno = method.getAnnotation(GlobalLock.class);
                     if (lockAnno != null) {
                         shouldSkip = false;
                         break;
                     }
                 }
-                
+
                 if (shouldSkip) {
                     return bean;
                 }
-                
+
                 if (interceptor == null) {
                     interceptor = new GlobalTransactionalInterceptor(failureHandlerHook);
                 }
