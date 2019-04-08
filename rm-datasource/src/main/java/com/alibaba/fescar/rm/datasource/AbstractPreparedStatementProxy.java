@@ -42,6 +42,8 @@ import com.alibaba.fescar.rm.datasource.sql.struct.Null;
 
 /**
  * The type Abstract prepared statement proxy.
+ *
+ * @author sharajava
  */
 public abstract class AbstractPreparedStatementProxy extends StatementProxy<PreparedStatement>
     implements PreparedStatement {
@@ -209,6 +211,7 @@ public abstract class AbstractPreparedStatementProxy extends StatementProxy<Prep
 
     }
 
+    @Deprecated
     @Override
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
         setParamByIndex(parameterIndex, x);

@@ -14,10 +14,12 @@
  *  limitations under the License.
  */
 
-package com.alibaba.fescar.core.service;
+package com.alibaba.fescar.core.constants;
 
 /**
  * The type Configuration keys.
+ *
+ * @author jimin.jm @alibaba-inc.com
  */
 public class ConfigurationKeys {
 
@@ -25,6 +27,11 @@ public class ConfigurationKeys {
      * The constant SERVICE_PREFIX.
      */
     public static final String SERVICE_PREFIX = "service.";
+
+    /**
+     * The constant STORE_PREFIX.
+     */
+    public static final String STORE_PREFIX = "store.";
     /**
      * The constant SERVICE_GROUP_MAPPING_PREFIX.
      */
@@ -64,5 +71,5 @@ public class ConfigurationKeys {
     /**
      * The constant SERVICE_SESSION_RELOAD_READ_SIZE
      */
-    public static final String SERVICE_SESSION_RELOAD_READ_SIZE = SERVICE_PREFIX + "session.reload.read_size";
+    public static final String SERVICE_SESSION_RELOAD_READ_SIZE = STORE_PREFIX + "session.reload.read_size";
 }

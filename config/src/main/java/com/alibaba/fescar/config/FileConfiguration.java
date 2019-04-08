@@ -60,9 +60,9 @@ public class FileConfiguration extends AbstractConfiguration<ConfigChangeListene
 
     private static final String REGISTRY_TYPE = "file";
 
-    private final ConcurrentMap<String, List<ConfigChangeListener>> configListenersMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<ConfigChangeListener>> configListenersMap = new ConcurrentHashMap<>(8);
 
-    private final ConcurrentMap<String, String> listenedConfigMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> listenedConfigMap = new ConcurrentHashMap<>(8);
 
     /**
      * Instantiates a new File configuration.
@@ -95,7 +95,7 @@ public class FileConfiguration extends AbstractConfiguration<ConfigChangeListene
     public String getConfig(String dataId, String defaultValue, long timeoutMills) {
         ConfigFuture configFuture = new ConfigFuture(dataId, defaultValue, ConfigOperation.GET, timeoutMills);
         configOperateExecutor.submit(new ConfigOperateRunnable(configFuture));
-        return (String)configFuture.get(timeoutMills, TimeUnit.MILLISECONDS);
+        return (String)configFuture.get();
     }
 
     @Override
@@ -109,14 +109,14 @@ public class FileConfiguration extends AbstractConfiguration<ConfigChangeListene
     public boolean putConfigIfAbsent(String dataId, String content, long timeoutMills) {
         ConfigFuture configFuture = new ConfigFuture(dataId, content, ConfigOperation.PUTIFABSENT, timeoutMills);
         configOperateExecutor.submit(new ConfigOperateRunnable(configFuture));
-        return (Boolean)configFuture.get(timeoutMills, TimeUnit.MILLISECONDS);
+        return (Boolean)configFuture.get();
     }
 
     @Override
     public boolean removeConfig(String dataId, long timeoutMills) {
         ConfigFuture configFuture = new ConfigFuture(dataId, null, ConfigOperation.REMOVE, timeoutMills);
         configOperateExecutor.submit(new ConfigOperateRunnable(configFuture));
-        return (Boolean)configFuture.get(timeoutMills, TimeUnit.MILLISECONDS);
+        return (Boolean)configFuture.get();
     }
 
     @Override
@@ -242,8 +242,8 @@ public class FileConfiguration extends AbstractConfiguration<ConfigChangeListene
                 try {
                     Map<String, List<ConfigChangeListener>> configListenerMap;
                     if (null != dataId && null != listener) {
-                        configListenerMap = new ConcurrentHashMap<>();
-                        configListenerMap.put(dataId, new ArrayList<ConfigChangeListener>());
+                        configListenerMap = new ConcurrentHashMap<>(8);
+                        configListenerMap.put(dataId, new ArrayList<>());
                         configListenerMap.get(dataId).add(listener);
                     } else {
                         configListenerMap = configListenersMap;

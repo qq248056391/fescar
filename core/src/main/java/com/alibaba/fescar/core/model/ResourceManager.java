@@ -20,6 +20,8 @@ import java.util.Map;
 
 /**
  * Resource Manager: common behaviors.
+ *
+ * @author sharajava
  */
 public interface ResourceManager extends ResourceManagerInbound, ResourceManagerOutbound {
 
@@ -43,4 +45,10 @@ public interface ResourceManager extends ResourceManagerInbound, ResourceManager
      * @return resourceId -> Resource Map
      */
     Map<String, Resource> getManagedResources();
+
+    /**
+     * get the BranchType
+     * @return
+     */
+    BranchType getBranchType();
 }

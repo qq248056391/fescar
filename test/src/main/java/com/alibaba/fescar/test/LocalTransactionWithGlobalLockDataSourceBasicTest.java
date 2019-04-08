@@ -36,6 +36,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * The type Data source basic test.
+ *
+ * @author fescar
  */
 @Ignore
 public class LocalTransactionWithGlobalLockDataSourceBasicTest {
@@ -44,7 +46,7 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
     private static JdbcTemplate jdbcTemplate;
     private static JdbcTemplate directJdbcTemplate;
 
-    private abstract static class LockConflictExecuteTemplate {
+    private abstract static class AbstractLockConflictExecuteTemplate {
         public void execute() {
             synchronized (LocalTransactionWithGlobalLockDataSourceBasicTest.class) {
                 DataSourceManager.set(new MockDataSourceManager() {
@@ -89,7 +91,7 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
     @Test
     public void testInsertWithLock() {
         RootContext.bindGlobalLockFlag();
-        new LockConflictExecuteTemplate() {
+        new AbstractLockConflictExecuteTemplate() {
             @Override
             public void doExecute() {
                 jdbcTemplate.update("insert into user0 (id, name, gmt) values (?, ?, ?)",
@@ -111,7 +113,7 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
     public void testUpdateWithLock() {
         RootContext.bindGlobalLockFlag();
         RootContext.bindGlobalLockFlag();
-        new LockConflictExecuteTemplate() {
+        new AbstractLockConflictExecuteTemplate() {
             @Override
             public void doExecute() {
                 jdbcTemplate.update("update user0 a set a.name = 'yyyy' where a.id = ?", new Object[] {1});
@@ -144,7 +146,7 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
             new Object[] {1, "xxx", new Date()});
 
         RootContext.bindGlobalLockFlag();
-        new LockConflictExecuteTemplate() {
+        new AbstractLockConflictExecuteTemplate() {
 
             @Override
             public void doExecute() {
@@ -169,7 +171,7 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
     @Test
     public void testDeleteForLockConflict() {
         RootContext.bindGlobalLockFlag();
-        new LockConflictExecuteTemplate() {
+        new AbstractLockConflictExecuteTemplate() {
 
             @Override
             public void doExecute() {
@@ -193,7 +195,7 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
     @Test
     public void testSelectForUpdateWithLockConflict() {
         RootContext.bindGlobalLockFlag();
-        new LockConflictExecuteTemplate() {
+        new AbstractLockConflictExecuteTemplate() {
 
             @Override
             public void doExecute() {
@@ -205,14 +207,13 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
     public static class MockDataSourceManager extends DataSourceManager {
 
         @Override
-        public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid,
-                                   String lockKeys) throws TransactionException {
+        public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid, String applicationData, String lockKeys)
+                throws TransactionException {
             throw new RuntimeException("this method should not be called!");
         }
 
         @Override
-        public void branchReport(String xid, long branchId, BranchStatus status, String applicationData)
-            throws TransactionException {
+        public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status, String applicationData) throws TransactionException {
             throw new RuntimeException("this method should not be called!");
         }
 
@@ -233,13 +234,12 @@ public class LocalTransactionWithGlobalLockDataSourceBasicTest {
         }
 
         @Override
-        public BranchStatus branchCommit(String xid, long branchId, String resourceId, String applicationData)
-            throws TransactionException {
+        public BranchStatus branchCommit(BranchType branchType, String xid, long branchId, String resourceId, String applicationData) throws TransactionException {
             throw new RuntimeException("this method should not be called!");
         }
 
         @Override
-        public BranchStatus branchRollback(String xid, long branchId, String resourceId, String applicationData)
+        public BranchStatus branchRollback(BranchType branchType, String xid, long branchId, String resourceId, String applicationData)
             throws TransactionException {
             throw new RuntimeException("this method should not be called!");
         }

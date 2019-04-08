@@ -16,18 +16,29 @@
 
 package com.alibaba.fescar.rm.datasource;
 
+import com.alibaba.druid.util.JdbcUtils;
+import com.alibaba.fescar.core.model.BranchType;
+import com.alibaba.fescar.core.model.Resource;
+import com.alibaba.fescar.rm.DefaultResourceManager;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.fescar.core.model.Resource;
-
 /**
  * The type Data source proxy.
+ *
+ * @author sharajava
  */
 public class DataSourceProxy extends AbstractDataSourceProxy implements Resource {
 
-    private String resourceGroupId = "DEFAULT";
+    private String resourceGroupId;
+
+    private static final String DEFAULT_RESOURCE_GROUP_ID = "DEFAULT";
+
+    private String jdbcUrl;
+
+    private String dbType;
 
     private boolean managed = false;
 
@@ -36,8 +47,8 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
      *
      * @param targetDataSource the target data source
      */
-    public DataSourceProxy(DruidDataSource targetDataSource) {
-        super(targetDataSource);
+    public DataSourceProxy(DataSource targetDataSource) {
+        this(targetDataSource, DEFAULT_RESOURCE_GROUP_ID);
     }
 
     /**
@@ -46,14 +57,24 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
      * @param targetDataSource the target data source
      * @param resourceGroupId  the resource group id
      */
-    public DataSourceProxy(DruidDataSource targetDataSource, String resourceGroupId) {
+    public DataSourceProxy(DataSource targetDataSource, String resourceGroupId) {
         super(targetDataSource);
+        init(targetDataSource, resourceGroupId);
+    }
+
+    private void init(DataSource dataSource, String resourceGroupId) {
         this.resourceGroupId = resourceGroupId;
+        try (Connection connection = dataSource.getConnection()) {
+            jdbcUrl = connection.getMetaData().getURL();
+            dbType = JdbcUtils.getDbType(jdbcUrl, null);
+        } catch (SQLException e) {
+            throw new IllegalStateException(String.format("can not init dataSource :%s", e.getSQLState()));
+        }
     }
 
     private void assertManaged() {
         if (!managed) {
-            DataSourceManager.get().registerResource(this);
+            DefaultResourceManager.get().registerResource(this);
             managed = true;
         }
     }
@@ -74,21 +95,21 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
      * @return the db type
      */
     public String getDbType() {
-        return targetDataSource.getDbType();
+        return dbType;
     }
 
     @Override
     public ConnectionProxy getConnection() throws SQLException {
         assertManaged();
         Connection targetConnection = targetDataSource.getConnection();
-        return new ConnectionProxy(this, targetConnection, targetDataSource.getDbType());
+        return new ConnectionProxy(this, targetConnection);
     }
 
     @Override
     public ConnectionProxy getConnection(String username, String password) throws SQLException {
         assertManaged();
         Connection targetConnection = targetDataSource.getConnection(username, password);
-        return new ConnectionProxy(this, targetConnection, targetDataSource.getDbType());
+        return new ConnectionProxy(this, targetConnection);
     }
 
     @Override
@@ -98,6 +119,11 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
 
     @Override
     public String getResourceId() {
-        return targetDataSource.getUrl();
+        return jdbcUrl;
+    }
+
+    @Override
+    public BranchType getBranchType() {
+        return BranchType.AT;
     }
 }

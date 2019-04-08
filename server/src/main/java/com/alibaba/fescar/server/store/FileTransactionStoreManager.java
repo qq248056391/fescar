@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type File transaction store manager.
+ *
+ * @author jimin.jm @alibaba-inc.com
  */
 public class FileTransactionStoreManager implements TransactionStoreManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileTransactionStoreManager.class);
@@ -76,6 +78,8 @@ public class FileTransactionStoreManager implements TransactionStoreManager {
     private String currFullFileName;
     private String hisFullFileName;
 
+    private static final int MAX_WRITE_BUFFER_SIZE = StoreConfig.getFileWriteBufferCacheSize();
+
     /**
      * Instantiates a new File transaction store manager.
      *
@@ -98,6 +102,10 @@ public class FileTransactionStoreManager implements TransactionStoreManager {
         try {
             currDataFile = new File(currFullFileName);
             if (!currDataFile.exists()) {
+                //create parent dir first
+                if (currDataFile.getParentFile() != null && !currDataFile.getParentFile().exists()) {
+                    currDataFile.getParentFile().mkdirs();
+                }
                 currDataFile.createNewFile();
                 trxStartTimeMills = System.currentTimeMillis();
             } else {
@@ -258,11 +266,15 @@ public class FileTransactionStoreManager implements TransactionStoreManager {
      */
     class WriteDataFileRunnable implements Runnable {
 
+
+        ByteBuffer wireteBuffer =  ByteBuffer.allocateDirect(MAX_WRITE_BUFFER_SIZE);
+
         @Override
         public void run() {
             while (!stopping) {
+                TransactionWriteFuture transactionWriteFuture = null;
                 try {
-                    TransactionWriteFuture transactionWriteFuture = transactionWriteFutureQueue.poll(
+                    transactionWriteFuture = transactionWriteFutureQueue.poll(
                         MAX_POOL_TIME_MILLS,
                         TimeUnit.MILLISECONDS);
                     if (null == transactionWriteFuture) {
@@ -288,6 +300,10 @@ public class FileTransactionStoreManager implements TransactionStoreManager {
                     stopping = true;
                 } catch (Exception exx) {
                     LOGGER.error(exx.getMessage());
+                    if (transactionWriteFuture != null){
+                        // fast fail
+                        transactionWriteFuture.setResult(Boolean.FALSE);
+                    }
                 }
             }
 
@@ -295,8 +311,20 @@ public class FileTransactionStoreManager implements TransactionStoreManager {
 
         private boolean writeDataFile(byte[] bs) {
             int retry = 0;
-            byte[] byWrite = new byte[bs.length + 4];
-            ByteBuffer byteBuffer = ByteBuffer.wrap(byWrite);
+            if (bs == null){
+                return false;
+            }
+            ByteBuffer byteBuffer = null;
+
+            if (bs.length > MAX_WRITE_BUFFER_SIZE){
+                //allocateNew
+                byteBuffer = ByteBuffer.allocateDirect(bs.length);
+            }else {
+                byteBuffer = wireteBuffer;
+                //recycle
+                byteBuffer.clear();
+            }
+
             byteBuffer.putInt(bs.length);
             byteBuffer.put(bs);
             for (; retry < MAX_WRITE_RETRY; retry++) {
