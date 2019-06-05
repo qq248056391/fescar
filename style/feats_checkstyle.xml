@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~  Copyright 1999-2018 Alibaba Group Holding Ltd.
+  ~  Copyright 1999-2019 Seata.io Group.
   ~
   ~  Licensed under the Apache License, Version 2.0 (the "License");
   ~  you may not use this file except in compliance with the License.
@@ -52,10 +52,6 @@
         <property name="message" value="Recommended fix TODO task !"/>
     </module>
 
-    <module name="RegexpSingleline">
-        <property name="format" value="@alibaba"/>
-        <property name="message" value="Recommended remove @alibaba keyword!"/>
-    </module>
     <module name="RegexpSingleline">
         <property name="format" value="@taobao"/>
         <property name="message" value="Recommended remove @taobao keyword!"/>

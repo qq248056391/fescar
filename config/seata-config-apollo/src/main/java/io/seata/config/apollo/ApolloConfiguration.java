@@ -52,7 +52,7 @@ public class ApolloConfiguration extends AbstractConfiguration<ConfigChangeListe
     private static final String REGISTRY_TYPE = "apollo";
     private static final String APP_ID = "app.id";
     private static final String APOLLO_META = "apollo.meta";
-    private static final Configuration FILE_CONFIG = ConfigurationFactory.FILE_INSTANCE;
+    private static final Configuration FILE_CONFIG = ConfigurationFactory.CURRENT_FILE_INSTANCE;
     private static volatile Config config;
     private ExecutorService configOperateExecutor;
     private static final int CORE_CONFIG_OPERATE_THREAD = 1;
@@ -122,7 +122,7 @@ public class ApolloConfiguration extends AbstractConfiguration<ConfigChangeListe
 
     @Override
     public boolean putConfigIfAbsent(String dataId, String content, long timeoutMills) {
-        throw new NotSupportYetException("not support putConfigIfAbsent");
+        throw new NotSupportYetException("not support atomic operation putConfigIfAbsent");
     }
 
     @Override

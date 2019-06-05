@@ -43,7 +43,7 @@ public class NacosConfiguration extends AbstractConfiguration<Listener> {
     private static final String SEATA_GROUP = "SEATA_GROUP";
     private static final String PRO_SERVER_ADDR_KEY = "serverAddr";
     private static final String REGISTRY_TYPE = "nacos";
-    private static final Configuration FILE_CONFIG = ConfigurationFactory.FILE_INSTANCE;
+    private static final Configuration FILE_CONFIG = ConfigurationFactory.CURRENT_FILE_INSTANCE;
     private static volatile ConfigService configService;
 
     /**
@@ -82,7 +82,7 @@ public class NacosConfiguration extends AbstractConfiguration<Listener> {
 
     @Override
     public boolean putConfigIfAbsent(String dataId, String content, long timeoutMills) {
-        throw new NotSupportYetException("not support putConfigIfAbsent");
+        throw new NotSupportYetException("not support atomic operation putConfigIfAbsent");
     }
 
     @Override
@@ -112,7 +112,7 @@ public class NacosConfiguration extends AbstractConfiguration<Listener> {
 
     @Override
     public List<Listener> getConfigListeners(String dataId) {
-        throw new NotSupportYetException("not support putConfigIfAbsent");
+        throw new NotSupportYetException("not support getConfigListeners");
     }
 
     private static Properties getConfigProperties() {
